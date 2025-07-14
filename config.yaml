@@ -1,0 +1,31 @@
+# config.yaml
+
+# Folders to watch/ingest (can be a list)
+folders:
+  - ~/Desktop
+  - ~/Documents
+
+# File extensions to skip
+skip_exts:
+  - .exe
+  - .dll
+  - .bin
+  - .msi
+  - .app
+  - .com
+  - .scr
+  - .o
+  - .so
+
+# Chroma DB config
+chroma_db_path: chroma_data
+
+# SQLite queue path
+queue_db: ingest_queue.sqlite3
+
+# Worker batching
+partition: 0        # worker number
+total_partitions: 1 # total workers (set in Docker/env for parallelism)
+
+# Logging
+log_level: INFO
