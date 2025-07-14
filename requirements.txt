@@ -2,3 +2,5 @@ requests
 tqdm
 PyPDF2
 python-docx
+fastapi
+uvicorn

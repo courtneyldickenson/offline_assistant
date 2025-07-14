@@ -1,0 +1,20 @@
+[
+  {
+    "type": "note",
+    "text": "Water the cucumbers every morning.",
+    "date": "2025-07-14",
+    "tags": ["plants", "routine"]
+  },
+  {
+    "type": "task",
+    "text": "Buy dog food by Thursday.",
+    "due": "2025-07-17",
+    "tags": ["shopping", "pet"]
+  },
+  {
+    "type": "log",
+    "text": "Lucy napped for two hours.",
+    "date": "2025-07-10",
+    "tags": ["child", "health"]
+  }
+]
