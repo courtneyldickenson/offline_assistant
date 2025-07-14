@@ -75,3 +75,10 @@ def delete_entry(entry_id):
     """Delete an entry by its unique ID."""
     collection.delete(ids=[entry_id])
 
+def file_already_learned(file_key):
+    """
+    Returns True if a file with this file_key is already in the DB, else False.
+    Assumes your 'files' collection stores 'file_key' in metadata.
+    """
+    results = collection.get(where={"file_key": file_key}, include=["metadatas"])
+    return bool(results["ids"])
