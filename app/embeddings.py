@@ -1,7 +1,7 @@
-import requests
+import requests 
 
 OLLAMA_EMBED_URL = "http://localhost:11434/api/embeddings"
-NOMIC_MODEL = "nomic-embed-text"
+NOMIC_MODEL = "nomic-embed-text:v1.5"
 
 def get_embedding(text):
     payload = {"model": NOMIC_MODEL, "prompt": text}
