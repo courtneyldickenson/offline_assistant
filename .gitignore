@@ -16,9 +16,10 @@ dist/
 # VS Code settings
 .vscode/
 
-# OS files
+# OS and editor junk files
 .DS_Store
 Thumbs.db
+.*~
 
 # Jupyter notebooks checkpoints
 .ipynb_checkpoints/
@@ -29,13 +30,39 @@ htmlcov/
 
 # Logs
 *.log
+**/*.log
 
 # PyInstaller
 *.spec
 
-# macOS specific
-.DS_Store
+# Compiled object files
+*.o
+*.so
 
-# Ignore model/embedding cache files
-*.cache/
+# Model and embedding cache
+.cache/
 cache/
+*.cache
+*.pickle
+*.joblib
+
+# Hugging Face / Ollama cache (optional)
+~/.cache/ollama/
+~/.cache/huggingface/
+
+# Local database and vector store
+chroma_data/
+*.sqlite3
+*.sqlite3-journal
+*.db-wal
+*.db-shm
+
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Docker-related (optional)
+docker-compose.override.yml
+*.bak
