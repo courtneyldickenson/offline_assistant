@@ -4,7 +4,7 @@
 folders:
   - ~/Desktop/Crochet_patterns
 
-# File extensions to skip
+# File extensions to skip (lowercase, with leading dot)
 skip_exts:
   - .exe
   - .dll
@@ -22,7 +22,14 @@ chroma_db_path: chroma_data
 # SQLite queue path
 queue_db: ingest_queue.sqlite3
 
-# Worker batching
+# Embedding server/model config
+embedding_url: http://localhost:11434    # Default: Ollama local endpoint
+embedding_model: llama3                  # Default: Llama 3 model
+
+# Number of search results (context passages) to send to LLM for answers
+n_results: 5
+
+# Worker batching (advanced: for parallel/cluster runs)
 partition: 0        # worker number
 total_partitions: 1 # total workers (set in Docker/env for parallelism)
 
