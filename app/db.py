@@ -2,11 +2,21 @@
 
 import chromadb
 import uuid
+import os
 
-# Initialize ChromaDB persistent client (data will be stored in ./chroma_data/)
-client = chromadb.PersistentClient(path="chroma_data")
+# Load config from config.yaml (assuming you have a loader)
+from app.utilities.config import load_config
 
-# You can use one collection for all data, or create more if you want to separate types
+# 1. Load config
+config = load_config()
+
+# 2. Decide DB path: env var > config.yaml > fallback
+CHROMA_PATH = os.environ.get("CHROMA_DB_PATH", config.get("chroma_db_path", "chroma_data"))
+
+# 3. Initialize persistent client
+client = chromadb.PersistentClient(path=CHROMA_PATH)
+
+# 4. Use or create collection
 collection = client.get_or_create_collection("assistant_data")
 
 

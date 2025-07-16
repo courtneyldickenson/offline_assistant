@@ -2,8 +2,7 @@
 
 # Folders to watch/ingest (can be a list)
 folders:
-  - ~/Desktop
-  - ~/Documents
+  - ~/Desktop/Crochet_patterns
 
 # File extensions to skip
 skip_exts:

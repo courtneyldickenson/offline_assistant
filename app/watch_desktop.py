@@ -6,7 +6,7 @@ from app.utilities.files import get_file_metadata, file_key
 
 config = load_config()
 FOLDERS = [os.path.expanduser(f) for f in config["folders"]]
-SKIP_EXTS = tuple(config["skip_exts"])  # Correct usage for endswith
+SKIP_EXTS = tuple(config["skip_exts"])  
 
 def should_skip_file(path):
     return path.lower().endswith(SKIP_EXTS)
