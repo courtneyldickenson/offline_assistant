@@ -1,141 +1,159 @@
 # Offline Assistant (RAG-Ready Backend)
 
-A privacy-first, local-first, plug-and-play backend for building your own AI-powered assistant.  
-No cloud required; no data leaves your machine. Bring your own frontend and connect any LLM—Ollama, LM Studio, LocalAI, llama.cpp, etc.—for 100% local inference.
+Build your own AI-powered assistant that *actually* stays private.  
+No cloud. No data ever leaves your machine.  
+Works with your favorite local LLMs (Ollama, LM Studio, LocalAI, llama.cpp—you pick).
 
 ---
 
-## Features
+## What Does It Do?
 
-- Retrieval-Augmented Generation (RAG) Q&A over your notes, tasks, logs, and documents
-- Scans and ingests local files (PDF, TXT, DOCX, CSV, etc.)
-- Plug-and-play: Attaches to any LLM running locally or on your LAN (Ollama, LM Studio, LocalAI, llama.cpp, etc.)
-- Portable, human-readable config (`config.yaml`)
-- All embeddings stored locally with ChromaDB (never sent to cloud)
-- FastAPI backend with clean REST endpoints for search and learning
-- Modular, extensible code—easy to add scripts, plugins, or new skills
-- Utilities for file scanning, snippet extraction, and embedding (see `/app/watch_desktop.py`, `/app/ingest_files.py`)
+- Search your files and notes using AI (Retrieval-Augmented Generation, aka RAG)
+- Ingests all kinds of files (PDF, TXT, DOCX, CSV, you name it)
+- Plug-and-play with any local LLM—swap in whatever’s running
+- Modular code: every core piece is a class, easy to hack/extend
+- All data and embeddings are stored locally (ChromaDB, by default)
+- FastAPI backend—REST API ready to go, or build your own UI on top
+- Built-in health check so you know if things are working
+- Utilities for scanning folders, extracting text, and queueing up stuff to learn
 
 ---
 
 ## Quickstart
 
-**This project runs on macOS, Linux, and Windows.**
+**Works on macOS, Linux, Windows—wherever you want.**
 
-1. **Clone the repository and set up your Python environment:**
+1. **Get the code and install dependencies:**
+
     ```sh
     git clone https://github.com/YOURUSERNAME/offline_assistant.git
     cd offline_assistant
     python -m venv venv
-    # On macOS/Linux:
-    source venv/bin/activate
-    # On Windows:
-    # venv\Scripts\activate
+    source venv/bin/activate  # or 'venv\Scripts\activate' on Windows
     pip install -r requirements.txt
     ```
 
-2. **Configure which folders to scan:**
-    - Edit the `folders` section in `config.yaml` to list the directories you want to index.
-    - Example:
-      ```yaml
-      folders:
-        - ~/Desktop
-        - ~/Documents
-      ```
+2. **Pick your folders to scan:**  
+   Edit `config.yaml` with whatever you want indexed.
 
-3. **Scan and queue your files for learning:**
-    ```sh
-    python app/watch_desktop.py
-    ```
-    This will queue all new/unprocessed files for learning.
+3. **(Optional) Set up your LLM backend:**  
+   Ollama, LM Studio, etc.—just run it locally and set `embedding_url` + `embedding_model` in `config.yaml`.
 
-4. **Ingest queued files (process and embed):**
-    ```sh
-    python app/ingest_files.py
-    ```
-    This processes each queued file, extracts text, and stores embeddings in ChromaDB.
+4. **Fire up the backend:**
 
-5. **(Optional) Start your LLM backend:**
-    - Run Ollama, LM Studio, LocalAI, etc., locally.  
-    - Configure your LLM API endpoint and model in your `.env` file or as environment variables:
-      ```
-      LLM_API_URL=http://localhost:11434
-      LLM_MODEL=llama3
-      ```
-
-6. **Run the FastAPI backend:**
     ```sh
     uvicorn app.main:app --reload
     ```
-    The API will be available at http://localhost:8000
 
-7. **Try the API endpoints:**
-    - **Add document:**  
-      `POST http://localhost:8000/add`
-    - **Search (RAG/Q&A):**  
-      `POST http://localhost:8000/search`
-    - **Learn custom text:**  
-      `POST http://localhost:8000/learn`
-    - **Full scan and ingest:**  
-      `POST http://localhost:8000/scan`
-    - _(Swagger/OpenAPI docs: [http://localhost:8000/docs](http://localhost:8000/docs))_
+   The API is at [http://localhost:8000](http://localhost:8000) (Swagger docs included).
+
+---
+
+## For Developers: How to Actually Use It
+
+Everything is class-based and modular.  
+You don’t have to use the CLI scripts—just wire up what you want:
+
+```python
+from app.embeddings import Embedder
+from app.db import ChromaDatabase
+from app.learn import Learner
+from app.queue import IngestQueue
+
+embedder = Embedder()
+db = ChromaDatabase()
+learner = Learner(embedder, db)
+queue = IngestQueue()
+
+# Learn something
+learner.learn_text("Hydrate the plants", {"type": "note"})
+
+# Search your knowledge base
+results = db.query_similar(embedder.embed("watering routine"))
+print(results)
+```
+
+**Want to swap out the DB, embedder, or queue?**  
+Just write a class with the same methods (`embed`, `add_entry`, etc.), and drop it in.
+
+---
+
+## API Endpoints
+
+All the basics (and you can add more):
+
+- **POST /add:** Add a note, log, or doc
+- **POST /search:** Semantic search your stuff
+- **POST /learn:** Add text from any source
+- **POST /scan:** Scan folders and ingest files
+- **GET /health:** Check if the LLM, DB, and queue are alive
+
+Check [http://localhost:8000/docs](http://localhost:8000/docs) for the Swagger playground.
 
 ---
 
 ## Configuration
 
-- **Folders to watch:** Set in `config.yaml` under `folders:`
-- **File types to skip:** Set in `config.yaml` under `skip_exts:`
-- **ChromaDB path:** Set in `config.yaml` or via the `CHROMA_DB_PATH` environment variable
-- **LLM Backend:** Set `LLM_API_URL` and `LLM_MODEL` in `.env` or your environment
+Edit `config.yaml` for everything:  
+- Folders to index  
+- File types to skip  
+- ChromaDB location  
+- Which LLM to use (Ollama, LM Studio, etc.)  
+Or use environment variables if you want to override stuff.
 
 ---
 
-## Data Structure
+## Extending & Customization
 
-- All embeddings and file metadata are stored locally in ChromaDB (`chroma_data/` by default)
-- No personal or sensitive data leaves your machine
-- Example config and sample data are provided in the repo
+The Offline Assistant backend is designed to be **modular and developer-friendly**.  
+Every major piece—the embedder, database, queue, and skills—can be replaced or extended with your own classes or APIs.
 
----
+- Add your own FastAPI routes for new skills or integrations
+- Subclass or swap out pipeline pieces (embedding, DB, queue, etc.)
+- All you need to do is match the method signatures (like `.embed`, `.add_entry`, etc.)
 
-## Bring Your Own Frontend
+If you want to contribute an extension, add to the docs, or just share your workflow, open an issue or pull request!
 
-The backend exposes clean REST endpoints for integration with any UI—React, Streamlit, CLI, or mobile.  
-CORS is enabled for local development.
 
----
+```python
+@app.post("/summarize")
+def summarize(payload: dict = Body(...)):
+    text = payload.get("text")
+    summary = my_summary_func(text)
+    return {"summary": summary}
+```
 
-## Extending
-
-- Add scripts or utilities to `/scripts`
-- Add custom skills or wrappers to `/app/tasks.py`
-- Document your extensions for others
-
----
-
-## Contributing
-
-Feedback, suggestions, and improvements are welcome!  
-If you have ideas for new features, spot something to improve, or want to share your expertise, please open an issue or submit a pull request.
+You can subclass anything, or replace any pipeline piece (embedding, DB, etc.).  
+If you build something cool, make a PR or just show it off in the docs.
 
 ---
 
-## Notes
+## Health Check
 
-- **Virtual Environment Activation:**  
-    - macOS/Linux: `source venv/bin/activate`
-    - Windows: `venv\Scripts\activate`
-- **Python version:**  
-    - Python 3.8+ recommended
-- **Troubleshooting:**  
-    - If you hit permissions errors, check file/folder permissions for ChromaDB (`chroma_data/`)
-    - If you see DB errors, make sure the directory is writable by your user
-    - See Issues section for platform-specific tips
+Not sure if stuff is running?  
+`curl http://localhost:8000/health`  
+…or just hit the `/health` endpoint in your browser.
+
+---
+
+## Contribution & Feedback
+
+Open to feedback, bug reports, and especially new modules or docs.  
+If you’re stuck or want to add something, open an issue or just reach out.
 
 ---
 
 ## License
 
-MIT
+MIT, use it however you want.
+
+---
+
+## Roadmap
+
+- [ ] Plugin hot-reloading
+- [ ] Auth/user management
+- [ ] More built-in skills (summarize, reminders, etc.)
+- [ ] Whatever else makes this more useful—suggest away!
+
 
