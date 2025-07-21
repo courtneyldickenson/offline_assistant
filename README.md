@@ -1,4 +1,4 @@
-# Offline Assistant (RAG-Ready Backend)
+# Offline Assistant (RAG-Ready Backend Core)
 
 Build your own AI-powered assistant that *actually* stays private.  
 No cloud. No data ever leaves your machine.  
