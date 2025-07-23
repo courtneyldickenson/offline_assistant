@@ -12,7 +12,9 @@ class Embedder:
 
     def __init__(self, url: Optional[str] = None, model: Optional[str] = None):
         config = load_config()
+       
         self.url = url or config.get("embedding_url", "http://localhost:11434/api/embeddings")
+
         self.model = model or config.get("embedding_model", "nomic-embed-text:v1.5")
         self.timeout = 15  # seconds
 

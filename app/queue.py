@@ -85,6 +85,23 @@ class IngestQueue:
         finally:
             conn.close()
 
+    def __len__(self):
+        """
+        Return the number of files in the queue with status 'pending' or 'processing'.
+        """
+        try:
+            conn = self._connect()
+            c = conn.cursor()
+            c.execute("SELECT COUNT(*) FROM files WHERE status IN ('pending', 'processing')")
+            count = c.fetchone()[0]
+            return count
+        except Exception as e:
+            print(f"[QUEUE ERROR] Failed to get queue length: {e}")
+            return 0
+        finally:
+            conn.close()
+
+
 # Backwards-compatible procedural API
 try:
     _queue = IngestQueue()

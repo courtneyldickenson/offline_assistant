@@ -23,8 +23,9 @@ chroma_db_path: chroma_data
 queue_db: ingest_queue.sqlite3
 
 # Embedding server/model config
-embedding_url: http://localhost:11434    # Default: Ollama local endpoint
-embedding_model: llama3                  # Default: Llama 3 model
+embedding_url: http://localhost:11434/api/embeddings
+embedding_model: llama3
+
 
 # Number of search results (context passages) to send to LLM for answers
 n_results: 5

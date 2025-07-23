@@ -8,25 +8,40 @@ from app.queue import IngestQueue
 from app.watch_desktop import scan_and_queue
 from app.ingest_files import process_next_file
 
+import threading
+import time
+
 app = FastAPI(title="Offline Assistant RAG API")
 
-# init pipelien
+# --- INIT PIPELINE ---
 embedder = Embedder()
 db = ChromaDatabase()
 learner = Learner(embedder, db)
 queue = IngestQueue()
 
+# --- BACKGROUND QUEUE WORKER ---
+def queue_worker():
+    while True:
+        try:
+            if len(queue) > 0:
+                processed = process_next_file(queue, learner, db)
+                # Optionally log or print progress
+                if not processed:
+                    time.sleep(1)
+            else:
+                time.sleep(1)
+        except Exception as e:
+            print("[Queue Worker Error]", e)
+            time.sleep(2)
+
+threading.Thread(target=queue_worker, daemon=True).start()
+
+# --- ENDPOINTS ---
+
 @app.post("/add")
 def add_entry_endpoint(entry: dict = Body(...)):
     """
     Add a new note/task/log to memory.
-    Body example:
-    {
-      "text": "Water the cucumbers every morning.",
-      "type": "note",
-      "date": "2025-07-14",
-      "tags": ["plants", "routine"]
-    }
     """
     text = entry.get("text")
     if not text:
@@ -39,8 +54,6 @@ def add_entry_endpoint(entry: dict = Body(...)):
 def search_endpoint(query: dict = Body(...)):
     """
     Semantic search over learned entries.
-    Body example:
-    { "query": "dog food reminder" }
     """
     q = query.get("query")
     if not q:
@@ -53,11 +66,6 @@ def search_endpoint(query: dict = Body(...)):
 def learn_endpoint(payload: dict = Body(...)):
     """
     Add a simple learning entry (used by watcher or tools).
-    Body example:
-    {
-      "text": "something to learn",
-      "metadata": {"type": "note", "tags": ["python"]}
-    }
     """
     text = payload.get("text")
     metadata = payload.get("metadata", {})
@@ -68,26 +76,24 @@ def learn_endpoint(payload: dict = Body(...)):
 @app.post("/scan")
 def run_full_scan():
     """
-    Scan configured folders, queue new files, and ingest all unprocessed items.
+    Scan folders and queue new files for background ingestion.
+    Returns immediately; ingestion happens in the background.
     """
     queue.init_queue()
     scan_and_queue(queue, db)
-    processed = 0
-    while process_next_file(queue, learner, db):
-        processed += 1
-    return {"status": "complete", "processed": processed}
+    # Do NOT drain the queue here, let the worker do it!
+    return {"status": "queued", "queue_length": len(queue)}
 
 @app.get("/health")
 def health_check():
     """
-    Health check endpoint for API, DB, and embedding server.
-    Returns basic service availability.
+    Health check endpoint for API, DB, embedding server, and queue.
     """
     health = {}
     # LLM health
     try:
         embedding = embedder.embed("test")
-        health["embedding_server"] = "ok" if embedding else "fail"
+        health["embedding_server"] = "ok" if embedding is not None else "fail"
     except Exception as e:
         health["embedding_server"] = f"fail: {e}"
     # Chroma health
@@ -99,7 +105,8 @@ def health_check():
     # Queue health
     try:
         queue.init_queue()
-        health["queue"] = "ok"
+        qlen = len(queue)
+        health["queue"] = f"processing ({qlen} files)" if qlen > 0 else "idle"
     except Exception as e:
         health["queue"] = f"fail: {e}"
     return health
