@@ -44,16 +44,3 @@ class Learner:
             print(f"[LEARN ERROR] {e}")
             return {"status": "error", "id": None, "error": str(e)}
 
-# old functional API for drop-in compatibility
-try:
-    from app.embeddings import get_embedding
-    from app.db import add_entry
-    def learn_text(text: str, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        if not metadata:
-            metadata = {}
-        embedding = get_embedding(text)
-        entry_id = add_entry(text, embedding, metadata)
-        return {"status": "success", "id": entry_id}
-except ImportError:
-    # If running stand-alone without old API
-    pass

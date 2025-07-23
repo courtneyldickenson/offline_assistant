@@ -1,10 +1,6 @@
 # app/ingest_files.py
 
 import os
-
-from app.learn import learn_text
-
-
 from app.learn import Learner
 from app.embeddings import Embedder
 from app.db import ChromaDatabase
