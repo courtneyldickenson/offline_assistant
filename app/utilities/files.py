@@ -21,6 +21,31 @@ def get_file_metadata(path):
         "size": stat.st_size
     }
 
+def get_file_snippet(path, max_length=500):
+    """
+    Return a snippet (up to max_length characters) from the file at 'path'.
+    Attempts UTF-8 read first, then falls back to latin-1.
+    Returns empty string if file is binary or unreadable.
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            snippet = f.read(max_length)
+            # Check if file looks like text: no weird binary chars
+            if any(ord(c) < 9 for c in snippet):  # basic control chars check
+                return ""
+            return snippet
+    except UnicodeDecodeError:
+        # Try a fallback encoding
+        try:
+            with open(path, "r", encoding="latin-1") as f:
+                snippet = f.read(max_length)
+                return snippet
+        except Exception:
+            return ""
+    except Exception:
+        return ""
+
+
 def file_key(meta):
     """
     Return a unique key for the file based on name, size, and mtime.

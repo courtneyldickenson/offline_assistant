@@ -1,7 +1,6 @@
 import os
 from app.learn import learn_text
-from app.utilities.file_snippets import get_file_snippet
-from app.utilities.file_metadata import get_file_metadata
+from app.utilities.files import get_file_metadata, get_file_snippet
 from app.utilities.config import load_config
 from app.db import file_already_learned
 from app.queue import get_next_file, mark_done, init_queue
